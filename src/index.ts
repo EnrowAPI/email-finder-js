@@ -5,7 +5,9 @@ export interface FindEmailParams {
   fullName: string;
   companyDomain?: string;
   companyName?: string;
+  custom?: Record<string, unknown>;
   countryCode?: string;
+  retrieveGender?: boolean;
   webhook?: string;
 }
 
@@ -18,6 +20,7 @@ export interface FindEmailsParams {
     custom?: Record<string, unknown>;
   }>;
   countryCode?: string;
+  retrieveGender?: boolean;
   webhook?: string;
 }
 
@@ -62,9 +65,11 @@ export async function findEmail(params: FindEmailParams): Promise<EmailResult> {
   const body: Record<string, unknown> = { fullname: params.fullName };
   if (params.companyDomain) body.company_domain = params.companyDomain;
   if (params.companyName) body.company_name = params.companyName;
-  if (params.countryCode || params.webhook) {
+  if (params.custom) body.custom = params.custom;
+  if (params.countryCode || params.webhook || params.retrieveGender !== undefined) {
     body.settings = {
       ...(params.countryCode && { country_code: params.countryCode }),
+      ...(params.retrieveGender !== undefined && { retrieve_gender: params.retrieveGender }),
       ...(params.webhook && { webhook: params.webhook }),
     };
   }
@@ -84,9 +89,10 @@ export async function findEmails(params: FindEmailsParams): Promise<BulkEmailRes
       ...(s.custom && { custom: s.custom }),
     })),
   };
-  if (params.countryCode || params.webhook) {
+  if (params.countryCode || params.webhook || params.retrieveGender !== undefined) {
     body.settings = {
       ...(params.countryCode && { country_code: params.countryCode }),
+      ...(params.retrieveGender !== undefined && { retrieve_gender: params.retrieveGender }),
       ...(params.webhook && { webhook: params.webhook }),
     };
   }
